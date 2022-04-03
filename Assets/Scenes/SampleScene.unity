@@ -395,6 +395,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9fba13ad83fd49dcaa2b83086250425, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  backgroundTilePrefab: {fileID: 2896832174941528551, guid: 2a54e26879d1e4c3a8819f9545284a7f, type: 3}
   tilePrefab: {fileID: 8681892278209533222, guid: 00164132e2af443a0b8da5cd9daf339b, type: 3}
   width: 4
   height: 9

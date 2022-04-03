@@ -6,5 +6,4 @@ public class DotsScriptableObject : ScriptableObject
 {
     [SerializeField] public Color backgrounColor;
     // Use this for initialization
-    
 }

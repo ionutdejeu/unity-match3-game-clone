@@ -94,9 +94,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2093970910536892882}
   - component: {fileID: 9138830844097074978}
-  - component: {fileID: 8006154193170891854}
   - component: {fileID: 1933664403686497143}
   - component: {fileID: 3027372835484964394}
+  - component: {fileID: 885280628}
   m_Layer: 0
   m_Name: Tile
   m_TagString: Untagged
@@ -112,8 +112,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8681892278209533222}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 0.5}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1839410600}
@@ -172,22 +172,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &8006154193170891854
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8681892278209533222}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d7ae1db7e69cb4f6081ad4957933d168, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  dots:
-  - {fileID: 11400000, guid: b4f69a42c4b6e4e5d9201ba92f116667, type: 2}
-  - {fileID: 11400000, guid: cc1c6b1dc44504d38ac25be065b4d982, type: 2}
-  dotSpriteRender: {fileID: 1839410599}
 --- !u!114 &1933664403686497143
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -200,7 +184,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6e3f5715db1e440c8fc8b485e9eb04f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onDraggStart:
+  DirectionX: 0
+  DirectionY: 0
+  onDragEnded:
     m_PersistentCalls:
       m_Calls: []
 --- !u!58 &3027372835484964394
@@ -219,3 +205,30 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.5
+--- !u!114 &885280628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8681892278209533222}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9150eb06d5604c6d8b6cce1e27dd5e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  IndexX: 0
+  IndexY: 0
+  dragger: {fileID: 0}
+  dots:
+  - {fileID: 11400000, guid: cc1c6b1dc44504d38ac25be065b4d982, type: 2}
+  - {fileID: 11400000, guid: b4f69a42c4b6e4e5d9201ba92f116667, type: 2}
+  dotSpriteRender: {fileID: 1839410599}
+  selectionSpriteRender: {fileID: 0}
+  selectedDot: {fileID: 0}
+  OnTileDragged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnTileSwipeAnimationCompled:
+    m_PersistentCalls:
+      m_Calls: []
