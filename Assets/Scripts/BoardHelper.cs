@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class BoardHelper
 {
@@ -23,27 +24,35 @@ public class BoardHelper
 
 
     public static void AssingRandomTilesToBoardPlaceholders(
-        List<TileTypeScriptableObject> possibleTypes,
+        TileTypeScriptableObject[] possibleTypes,
         BoardPlaceholderProperties[,] boardPlaceholders,
         int boardWidth,
         int boardHeight,
         GameObject boardTilePrefab,
-        GameObject parent)
+        GameObject parent,
+        UnityAction<TileSwipeEventArgs> onTileDraggedHandler,
+        UnityAction<TileManager> onSwipeAnimationCompletedHandler)
     {
-        int randDot = UnityEngine.Random.Range(0, possibleTypes.Count);
         for (int i = 0; i < boardWidth; i++)
         {
             for (int j = 0; j < boardHeight; j++)
             {
+                int randDot = UnityEngine.Random.Range(0, possibleTypes.Length);
+
                 GameObject tileInstance = GameObject.Instantiate(boardTilePrefab, boardPlaceholders[i, j].worldPos, Quaternion.identity);
-                boardPlaceholders[i, j].tileRef = tileInstance.GetComponent<TileManager>();
+                TileManager tm = tileInstance.GetComponent<TileManager>();
                 tileInstance.transform.parent = parent.transform;
                 tileInstance.name = "item (" + i + ", " + j + ")";
                 TileProperties tileProps = new TileProperties();
                 tileProps.x = boardPlaceholders[i, j].x;
                 tileProps.y = boardPlaceholders[i, j].y;
                 tileProps.worldPos = boardPlaceholders[i, j].worldPos;
-                
+                tileProps.type = possibleTypes[randDot];
+                tm.setTileContentProperties(tileProps);
+                tm.OnTileDragged.AddListener(onTileDraggedHandler);
+                tm.OnTileSwipeAnimationCompled.AddListener(onSwipeAnimationCompletedHandler);
+                boardPlaceholders[i, j].tileRef = tm;
+
             }
         }
     }
@@ -76,21 +85,21 @@ public class BoardHelper
             }
             foreach (TileManager t in entry.Value)
             {
-                mappedTilesOfOneTypes[t.IndexX, t.IndexY] = t;
+                //mappedTilesOfOneTypes[t.IndexX, t.IndexY] = t;
             }
 
             foreach (TileManager t in entry.Value)
             {
-                List<TileManager> matchesInRow = GetCountOfMatchingTilesInRow(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
-                if (matchesInRow.Count > 0)
-                {
-                    matchingTiles.Add(matchesInRow);
-                }
-                List<TileManager> matchesInCol = GetCountOfMatchingTilesInColumn(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
-                if (matchesInCol.Count > 0)
-                {
-                    matchingTiles.Add(matchesInCol);
-                }
+                //List<TileManager> matchesInRow = GetCountOfMatchingTilesInRow(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
+                //if (matchesInRow.Count > 0)
+                //{
+                //    matchingTiles.Add(matchesInRow);
+                //}
+                //List<TileManager> matchesInCol = GetCountOfMatchingTilesInColumn(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
+                //if (matchesInCol.Count > 0)
+                //{
+                //    matchingTiles.Add(matchesInCol);
+                //}
             }
         }
         return matchingTiles;
@@ -125,21 +134,21 @@ public class BoardHelper
             }
             foreach (TileManager t in entry.Value)
             {
-                mappedTilesOfOneTypes[t.IndexX, t.IndexY] = t;
+                //mappedTilesOfOneTypes[t.IndexX, t.IndexY] = t;
             }
 
             foreach (TileManager t in entry.Value)
             {
-                List<TileManager> matchesInRow = GetCountOfMatchingTilesInRow(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
-                if (matchesInRow.Count>0)
-                {
-                    matchingTiles.Add(matchesInRow);
-                }
-                List<TileManager> matchesInCol = GetCountOfMatchingTilesInColumn(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
-                if (matchesInCol.Count > 0)
-                {
-                    matchingTiles.Add(matchesInCol);
-                }
+                //List<TileManager> matchesInRow = GetCountOfMatchingTilesInRow(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
+                //if (matchesInRow.Count>0)
+                //{
+                //    matchingTiles.Add(matchesInRow);
+                //}
+                //List<TileManager> matchesInCol = GetCountOfMatchingTilesInColumn(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
+                //if (matchesInCol.Count > 0)
+                //{
+                //    matchingTiles.Add(matchesInCol);
+                //}
             }
         }
         return matchingTiles;

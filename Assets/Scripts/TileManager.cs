@@ -23,17 +23,12 @@ public class TileSwipeEventArgs
 
 public class TileManager : MonoBehaviour
 {
-    public int IndexX;
-    public int IndexY;
+    
     [HideInInspector] public TileDraggerBehavior dragger;
     [HideInInspector] public TileAnimator animator;
     private TileProperties _props;
-    public TileProperties Props {get;private set;}   
+    public TileProperties Props {get;private set;}
     [HideInInspector] public TileGraphicsContentView view;
-    
-    public TileTypeScriptableObject[] dots;
-    public SpriteRenderer dotSpriteRender;
-    public SpriteRenderer selectionSpriteRender;
     [HideInInspector] public TileTypeScriptableObject selectedDot;
     [HideInInspector] public TileSwipeEvent OnTileDragged = new TileSwipeEvent();
     [HideInInspector] public UnityEvent<TileManager> OnTileSwipeAnimationCompled = new UnityEvent<TileManager>();
@@ -43,85 +38,43 @@ public class TileManager : MonoBehaviour
     {
         this._props = new_properties;
         // animate the transition
+        Debug.Log(view);
+        view.hidrate(new_properties);
+    }    
+
+
+    public void isMatched(bool value)
+    {
+        //update ui
+        _props.isMatched = value;
+        
+    }
+    public void StartMovementTowards(TileProperties targetTile)
+    {
+        this.dragger.setDragEnable(false);
+        this.animator.AnimateSwap(this._props, targetTile);
+    }
+
+
+    public void Awake()
+    {
+        this.view = this.gameObject.GetComponent<TileGraphicsContentView>();
+        this.dragger = this.gameObject.GetComponent<TileDraggerBehavior>();
+        this.dragger.onDragEnded.AddListener(this.OnCurrentTileDragStart);
+        this.animator = this.gameObject.GetComponent<TileAnimator>();
+        this.animator.OnSwipeAnimationCompled.AddListener(OnSwipeAnimationCompled);
     }
     
-
-    private TileManager targetTile;
-    private Vector3 targetTilePosition;
-    private int targetTileIndexX;
-    private int targetTileIndexY;
-    bool animateMovement = false;
-    bool _isPartOfMatch = false;
-    public void StartMovementTowards(TileManager targetTile)
-    {
-        this.targetTile = targetTile;
-        this.targetTilePosition = targetTile.transform.position;
-        this.dragger.setDragEnable(false);
-        this.targetTile.dragger.setDragEnable(false);
-        this.animateMovement = true;
-        targetTileIndexX = targetTile.IndexX;
-        targetTileIndexY = targetTile.IndexY;
-    }
-
-    public void StartMovementTowardsIndex(int indexX, int indexY)
-    {
-        
-    }
-
-    public void Start()
-    {
-        dragger = this.gameObject.GetComponent<TileDraggerBehavior>();
-        dragger.onDragEnded.AddListener(this.OnCurrentTileDragStart);
-        
-        Initialise();
-
-    }
-    public void setIsMatched(bool isSelected)
-    {
-        _isPartOfMatch = isSelected;
-        if(_isPartOfMatch)
-            selectionSpriteRender.color = Color.green;
-        else
-            selectionSpriteRender.color = Color.white;
-    }
     void OnCurrentTileDragStart(TileDraggerBehavior d)
     {
         OnTileDragged.Invoke(new TileSwipeEventArgs(this, d.DirectionX, d.DirectionY));
     }
 
-    public void SwapTilePosition()
-    { 
-        this.IndexX = targetTileIndexX;
-        this.IndexY = targetTileIndexY;   
+    void OnSwipeAnimationCompled()
+    {
+        OnTileSwipeAnimationCompled.Invoke(this);
+        this.dragger.setDragEnable(true);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (this.animateMovement)
-        {
-            this.transform.position = AngleCalculator.GetAnimatedPositionBetweenTilePosition(this.transform.position, targetTilePosition, 0.1f);
-            if (Vector3.Magnitude(targetTilePosition - this.transform.position) < 0.05f)
-            {
-                this.animateMovement = false;
-                this.dragger.setDragEnable(true);
-                this.targetTile.dragger.setDragEnable(true);
-                //snap the tile to position
-                this.transform.position = targetTilePosition;
-                this.IndexX = targetTileIndexX;
-                this.IndexY = targetTileIndexY;
-                Debug.Log($"t moved to idX:{this.IndexX},idY:{this.IndexY}");
-                //this.SwapTilePosition();
-                this.OnTileSwipeAnimationCompled.Invoke(this);
-            }
-        }
-    }
-
-    void Initialise()
-    {
-        int randDot = Random.Range(0, dots.Length);
-        this.selectedDot = dots[randDot];
-        this.dotSpriteRender.color = selectedDot.backgrounColor;
-    }
 
 }

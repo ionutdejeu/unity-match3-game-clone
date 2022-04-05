@@ -12,9 +12,11 @@ public class Board : MonoBehaviour
 
     [SerializeField] int width;
     [SerializeField] int height;
-    private BackgroundTile[,] backgroundTiles;
+    public TileTypeScriptableObject[] dots;
+
+ 
     private TileManager[,] tiles;
-    private TileManager[,] allTiles;
+    private BoardPlaceholderProperties[,] boardSlots;
     
     // Start is called before the first frame update
     void Start()
@@ -30,16 +32,16 @@ public class Board : MonoBehaviour
 
     void OnTileDraggHandler(TileSwipeEventArgs args)
     {
-        Debug.Log($"x:{args.dirX},y:{args.dirY},source X:{args.tile.IndexX},,source Y:{args.tile.IndexY}");
-        TileManager target = AngleCalculator.GetBoardTileBasedOnSwipeDirection(tiles, args.tile, new Vector2(args.dirX, args.dirY), width, height);
+        TileManager target = AngleCalculator.GetBoardTileBasedOnSwipeDirection(boardSlots, args.tile, new Vector2(args.dirX, args.dirY), width, height);
+        Debug.Log(target.name);
         if (target != args.tile)
         {
-            target.StartMovementTowards(args.tile);
-            args.tile.StartMovementTowards(target);
+            target.StartMovementTowards(args.tile.Props);
+            args.tile.StartMovementTowards(target.Props);
         }
     }
 
-    void OnAnimationComplete(TileManager sourceTile)
+    void OnSwipeAnimationCompleted(TileManager sourceTile)
     {
         List<TileManager> allTiles = new List<TileManager>();
 
@@ -49,14 +51,14 @@ public class Board : MonoBehaviour
             for (int j = 0; j < height; j++)
             {
                 allTiles.Add(tiles[i,j]);
-                tiles[i,j].setIsMatched(false);
+               // tiles[i,j].setIsMatched(false);
             }
 
         }
         for(int i = 0; i < allTiles.Count; i++)
         {
             TileManager t = allTiles[i];
-            tiles[t.IndexX, t.IndexY] = t;
+            //tiles[t.IndexX, t.IndexY] = t;
         }
 
         List<List<TileManager>> matchingTiles = BoardHelper.FindMatchingTiles(tiles, width, height);
@@ -66,8 +68,8 @@ public class Board : MonoBehaviour
         {
             foreach(TileManager t in matches)
             {
-                if(t!=null)
-                t.setIsMatched(true);
+                //if(t!=null)
+                //t.setIsMatched(true);
             }
         }
     }
@@ -77,29 +79,38 @@ public class Board : MonoBehaviour
         backgroundTiles = new BackgroundTile[width, height];
         tiles = new TileManager[width, height];
         allTiles = new TileManager[width, height];
-
-        for (int i = 0; i < width; i++)
-        {
-            for(int j = 0;j< height; j++)
-            {
-                Vector2 tempPos = new Vector2(i, j);
-                GameObject backTile = GameObject.Instantiate(backgroundTilePrefab, tempPos, Quaternion.identity);
-                backgroundTiles[i,j] = backTile.GetComponent<BackgroundTile>();
-                backTile.transform.parent = this.transform;
-                backTile.name = "background (" + i + ", " + j + ")";
-                Vector3 tilePos = new Vector3(i, j,-1);
-
-                GameObject tObj = GameObject.Instantiate(tilePrefab, tilePos, Quaternion.identity);
-                TileManager t = tObj.GetComponent<TileManager>();
-                t.IndexX = i;
-                t.IndexY = j;
-                tObj.transform.parent = this.transform;
-                tObj.name = "tile (" + i + ", " + j + ")";
-                t.OnTileDragged.AddListener(OnTileDraggHandler);
-                tiles[i, j] = t;
-                allTiles[i, j] = t;
-                t.OnTileSwipeAnimationCompled.AddListener(this.OnAnimationComplete);
-            }
-        }
+        boardSlots = BoardHelper.GenerateInitialBoard(width, height);
+        BoardHelper.AssingRandomTilesToBoardPlaceholders(dots,
+            boardSlots,
+            width,
+            height,
+            tilePrefab,
+            this.gameObject,
+            this.OnTileDraggHandler,
+            this.OnSwipeAnimationCompleted);
+        
+        //for (int i = 0; i < width; i++)
+        //{
+        //    for(int j = 0;j< height; j++)
+        //    {
+        //        Vector2 tempPos = new Vector2(i, j);
+        //        GameObject backTile = GameObject.Instantiate(backgroundTilePrefab, tempPos, Quaternion.identity);
+        //        backgroundTiles[i,j] = backTile.GetComponent<BackgroundTile>();
+        //        backTile.transform.parent = this.transform;
+        //        backTile.name = "background (" + i + ", " + j + ")";
+        //        Vector3 tilePos = new Vector3(i, j,-1);
+        //
+        //        GameObject tObj = GameObject.Instantiate(tilePrefab, tilePos, Quaternion.identity);
+        //        TileManager t = tObj.GetComponent<TileManager>();
+        //        t.IndexX = i;
+        //        t.IndexY = j;
+        //        tObj.transform.parent = this.transform;
+        //        tObj.name = "tile (" + i + ", " + j + ")";
+        //        t.OnTileDragged.AddListener(OnTileDraggHandler);
+        //        tiles[i, j] = t;
+        //        allTiles[i, j] = t;
+        //        t.OnTileSwipeAnimationCompled.AddListener(this.OnAnimationComplete);
+        //    }
+        //}
     }
 }

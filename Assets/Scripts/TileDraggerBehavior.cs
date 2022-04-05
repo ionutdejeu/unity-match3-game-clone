@@ -5,10 +5,10 @@ using UnityEngine.Events;
 
 public class TileDraggerBehavior : MonoBehaviour
 {
-    [SerializeField] public int DirectionX;
-    [SerializeField] public int DirectionY;
+    [HideInInspector] public int DirectionX;
+    [HideInInspector] public int DirectionY;
 
-    public UnityEvent<TileDraggerBehavior> onDragEnded = new UnityEvent<TileDraggerBehavior>();
+    [HideInInspector] public UnityEvent<TileDraggerBehavior> onDragEnded = new UnityEvent<TileDraggerBehavior>();
     Vector2 dragStartPosition;
     bool dragging = false;
     bool canStartDrag = true;

@@ -7,27 +7,26 @@ public class AngleCalculator
 
 
     
-    public static TileManager GetBoardTileBasedOnSwipeDirection(TileManager[,] tiles, TileManager sourceTile, Vector2 swipeDirection, int boardWidht,int boardHeight)
+    public static TileManager GetBoardTileBasedOnSwipeDirection(BoardPlaceholderProperties[,] tiles, TileManager sourceTile, Vector2 swipeDirection, int boardWidht,int boardHeight)
     {
-        Debug.Log($"Source index x:{sourceTile.IndexX} and y:{sourceTile.IndexY}");
+        Debug.Log($"Source index x:{sourceTile.Props.x} and y:{sourceTile.Props.y}");
 
-        int targetIndexX = sourceTile.IndexX - ((int)swipeDirection.x);
-        int targetIndexY = sourceTile.IndexY - ((int)swipeDirection.y);
-        Debug.Log($"swipe direction x:{swipeDirection.x} and y:{swipeDirection.y}");
+        int targetIndexX = sourceTile.Props.x - ((int)swipeDirection.x);
+        int targetIndexY = sourceTile.Props.y - ((int)swipeDirection.y);
          
         if (targetIndexX >= boardWidht) return sourceTile;
         if (targetIndexY >= boardHeight) return sourceTile;
         if (targetIndexY < 0) return sourceTile;
         if (targetIndexX < 0) return sourceTile;
-
+        
         for (int i = 0; i < boardWidht; i++)
         {
             for (int j = 0; j < boardHeight; j++)
             {
-                if (tiles[i, j].IndexX == targetIndexX && tiles[i, j].IndexY == targetIndexY)
+                if (tiles[i, j].x == targetIndexX && tiles[i, j].y == targetIndexY)
                 {
                     Debug.Log($"found target tile with x:{targetIndexX} and y:{targetIndexY} at index: {i},{j} ");
-                    return tiles[i, j];
+                    return tiles[i, j].tileRef;
                 }
             }
         }

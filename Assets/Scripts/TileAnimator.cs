@@ -19,7 +19,8 @@ public class TileAnimator : MonoBehaviour
 
     public void AnimateSwap(TileProperties current,TileProperties target)
     {
-        
+        isAnimating = true;
+        animationEndState = target;
     }
     
 
