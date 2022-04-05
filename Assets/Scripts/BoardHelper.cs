@@ -4,36 +4,69 @@ using UnityEngine;
 
 public class BoardHelper
 {
-    public static DotsScriptableObject[,] GenerateInitialBoard(int boardWidth, int boardHeight)
+    public static BoardPlaceholderProperties[,] GenerateInitialBoard(int boardWidth, int boardHeight)
     {
-        DotsScriptableObject[,] allTiles = new DotsScriptableObject[boardWidth,boardHeight];
-
-
-        return allTiles;
+        BoardPlaceholderProperties[,] allTilesContent = new BoardPlaceholderProperties[boardWidth,boardHeight];
+        // recompute the tiles based on index;
+        for (int i = 0; i < boardWidth; i++)
+        {
+            for (int j = 0; j < boardHeight; j++)
+            {
+                allTilesContent[i, j].x = i;
+                allTilesContent[i, j].y = j;
+                allTilesContent[i, j].worldPos = new Vector3(i,j,-1);
+            }
+        }
+        
+        return allTilesContent;
     }
 
 
-
-    public static List<List<Tile>> FindMatchingTiles(Tile[,] board,int boardWidht,int boardHeight)
+    public static void AssingRandomTilesToBoardPlaceholders(
+        List<TileTypeScriptableObject> possibleTypes,
+        BoardPlaceholderProperties[,] boardPlaceholders,
+        int boardWidth,
+        int boardHeight,
+        GameObject boardTilePrefab,
+        GameObject parent)
     {
-        List<List<Tile>> matchingTiles = new List<List<Tile>>();
-        Dictionary<DotsScriptableObject, List<Tile>> mappedTiles = new Dictionary<DotsScriptableObject, List<Tile>>();
+        int randDot = UnityEngine.Random.Range(0, possibleTypes.Count);
+        for (int i = 0; i < boardWidth; i++)
+        {
+            for (int j = 0; j < boardHeight; j++)
+            {
+                GameObject tileInstance = GameObject.Instantiate(boardTilePrefab, boardPlaceholders[i, j].worldPos, Quaternion.identity);
+                boardPlaceholders[i, j].tileRef = tileInstance.GetComponent<TileManager>();
+                tileInstance.transform.parent = parent.transform;
+                tileInstance.name = "item (" + i + ", " + j + ")";
+                TileProperties tileProps = new TileProperties();
+                tileProps.x = boardPlaceholders[i, j].x;
+                tileProps.y = boardPlaceholders[i, j].y;
+                tileProps.worldPos = boardPlaceholders[i, j].worldPos;
+                
+            }
+        }
+    }
 
+    public static List<List<TileManager>> FindMatchingTiles(BoardPlaceholderProperties[,] board, int boardWidht, int boardHeight)
+    {
+        List<List<TileManager>> matchingTiles = new List<List<TileManager>>();
+        Dictionary<string, List<TileManager>> mappedTiles = new Dictionary<string, List<TileManager>>();
         // recompute the tiles based on index;
         for (int i = 0; i < boardWidht; i++)
         {
             for (int j = 0; j < boardHeight; j++)
             {
-                if (!mappedTiles.ContainsKey(board[i, j].selectedDot))
+                if (!mappedTiles.ContainsKey(board[i, j].tileRef.Props.type.name))
                 {
-                    mappedTiles.Add(board[i, j].selectedDot, new List<Tile>());
+                    mappedTiles.Add(board[i, j].tileRef.Props.type.name, new List<TileManager>());
                 }
-                mappedTiles[board[i, j].selectedDot].Add(board[i, j]);
+                mappedTiles[board[i, j].tileRef.Props.type.name].Add(board[i, j].tileRef);
             }
         }
-        foreach (KeyValuePair<DotsScriptableObject, List<Tile>> entry in mappedTiles)
+        foreach (KeyValuePair<string, List<TileManager>> entry in mappedTiles)
         {
-            Tile[,] mappedTilesOfOneTypes = new Tile[boardWidht, boardHeight];
+            TileManager[,] mappedTilesOfOneTypes = new TileManager[boardWidht, boardHeight];
             for (int i = 0; i < boardWidht; i++)
             {
                 for (int j = 0; j < boardHeight; j++)
@@ -41,19 +74,19 @@ public class BoardHelper
                     mappedTilesOfOneTypes[i, j] = null;
                 }
             }
-            foreach (Tile t in entry.Value)
+            foreach (TileManager t in entry.Value)
             {
                 mappedTilesOfOneTypes[t.IndexX, t.IndexY] = t;
             }
 
-            foreach (Tile t in entry.Value)
+            foreach (TileManager t in entry.Value)
             {
-                List<Tile> matchesInRow = GetCountOfMatchingTilesInRow(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
-                if (matchesInRow.Count>0)
+                List<TileManager> matchesInRow = GetCountOfMatchingTilesInRow(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
+                if (matchesInRow.Count > 0)
                 {
                     matchingTiles.Add(matchesInRow);
                 }
-                List<Tile> matchesInCol = GetCountOfMatchingTilesInColumn(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
+                List<TileManager> matchesInCol = GetCountOfMatchingTilesInColumn(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
                 if (matchesInCol.Count > 0)
                 {
                     matchingTiles.Add(matchesInCol);
@@ -63,9 +96,58 @@ public class BoardHelper
         return matchingTiles;
     }
 
-    public static List<Tile> GetCountOfMatchingTilesInRow(Tile[,] matchingTileMatrix,int boardWithd,int boardHeight, int sourceX, int sourceY)
+    public static List<List<TileManager>> FindMatchingTiles(TileManager[,] board,int boardWidht,int boardHeight)
     {
-        List<Tile> matchFound = new List<Tile>();
+        List<List<TileManager>> matchingTiles = new List<List<TileManager>>();
+        Dictionary<TileTypeScriptableObject, List<TileManager>> mappedTiles = new Dictionary<TileTypeScriptableObject, List<TileManager>>();
+
+        // recompute the tiles based on index;
+        for (int i = 0; i < boardWidht; i++)
+        {
+            for (int j = 0; j < boardHeight; j++)
+            {
+                if (!mappedTiles.ContainsKey(board[i, j].selectedDot))
+                {
+                    mappedTiles.Add(board[i, j].selectedDot, new List<TileManager>());
+                }
+                mappedTiles[board[i, j].selectedDot].Add(board[i, j]);
+            }
+        }
+        foreach (KeyValuePair<TileTypeScriptableObject, List<TileManager>> entry in mappedTiles)
+        {
+            TileManager[,] mappedTilesOfOneTypes = new TileManager[boardWidht, boardHeight];
+            for (int i = 0; i < boardWidht; i++)
+            {
+                for (int j = 0; j < boardHeight; j++)
+                {
+                    mappedTilesOfOneTypes[i, j] = null;
+                }
+            }
+            foreach (TileManager t in entry.Value)
+            {
+                mappedTilesOfOneTypes[t.IndexX, t.IndexY] = t;
+            }
+
+            foreach (TileManager t in entry.Value)
+            {
+                List<TileManager> matchesInRow = GetCountOfMatchingTilesInRow(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
+                if (matchesInRow.Count>0)
+                {
+                    matchingTiles.Add(matchesInRow);
+                }
+                List<TileManager> matchesInCol = GetCountOfMatchingTilesInColumn(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
+                if (matchesInCol.Count > 0)
+                {
+                    matchingTiles.Add(matchesInCol);
+                }
+            }
+        }
+        return matchingTiles;
+    }
+
+    public static List<TileManager> GetCountOfMatchingTilesInRow(TileManager[,] matchingTileMatrix,int boardWithd,int boardHeight, int sourceX, int sourceY)
+    {
+        List<TileManager> matchFound = new List<TileManager>();
         int leftIndex = Math.Clamp(sourceX - 1, 0, boardWithd-1);
         int left2Index = Math.Clamp(sourceX - 2, 0, boardWithd-1);
         int rightIndex = Math.Clamp(sourceX + 1, 0, boardWithd-1);
@@ -107,9 +189,9 @@ public class BoardHelper
         return matchFound;
     }
 
-    public static List<Tile> GetCountOfMatchingTilesInColumn(Tile[,] matchingTileMatrix, int boardWithd, int boardHeight, int sourceX, int sourceY)
+    public static List<TileManager> GetCountOfMatchingTilesInColumn(TileManager[,] matchingTileMatrix, int boardWithd, int boardHeight, int sourceX, int sourceY)
     {
-        List<Tile> matchFound = new List<Tile>();
+        List<TileManager> matchFound = new List<TileManager>();
         int upIndex = Math.Clamp(sourceY + 1, 0, boardHeight-1);
         int up2Index = Math.Clamp(sourceY + 2, 0, boardHeight-1);
         int downIndex = Math.Clamp(sourceY - 1, 0, boardHeight-1);

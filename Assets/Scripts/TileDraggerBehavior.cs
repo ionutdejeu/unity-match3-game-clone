@@ -3,12 +3,12 @@ using System.Collections;
 using UnityEditor;
 using UnityEngine.Events;
 
-public class DraggerBehavior : MonoBehaviour
+public class TileDraggerBehavior : MonoBehaviour
 {
     [SerializeField] public int DirectionX;
     [SerializeField] public int DirectionY;
 
-    public UnityEvent<DraggerBehavior> onDragEnded = new UnityEvent<DraggerBehavior>();
+    public UnityEvent<TileDraggerBehavior> onDragEnded = new UnityEvent<TileDraggerBehavior>();
     Vector2 dragStartPosition;
     bool dragging = false;
     bool canStartDrag = true;
@@ -42,20 +42,6 @@ public class DraggerBehavior : MonoBehaviour
             dragging = false;
             onDragEnded.Invoke(this);
         }
-        
     }
-    
-    // Use this for initialization
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
     
 }

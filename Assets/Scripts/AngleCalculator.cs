@@ -7,7 +7,7 @@ public class AngleCalculator
 
 
     
-    public static Tile GetBoardTileBasedOnSwipeDirection(Tile[,] tiles, Tile sourceTile, Vector2 swipeDirection, int boardWidht,int boardHeight)
+    public static TileManager GetBoardTileBasedOnSwipeDirection(TileManager[,] tiles, TileManager sourceTile, Vector2 swipeDirection, int boardWidht,int boardHeight)
     {
         Debug.Log($"Source index x:{sourceTile.IndexX} and y:{sourceTile.IndexY}");
 

@@ -9,11 +9,11 @@ public class TileSwipeEvent : UnityEvent<TileSwipeEventArgs> { }
 
 public class TileSwipeEventArgs
 {
-    public Tile tile;
+    public TileManager tile;
     public int dirX;
     public int dirY;
 
-    public TileSwipeEventArgs(Tile t,int dirX,int dirY)
+    public TileSwipeEventArgs(TileManager t,int dirX,int dirY)
     {
         this.tile = t;
         this.dirX = dirX;
@@ -21,27 +21,38 @@ public class TileSwipeEventArgs
     }
 }
 
-public class Tile : MonoBehaviour
+public class TileManager : MonoBehaviour
 {
     public int IndexX;
     public int IndexY;
-    [HideInInspector] public DraggerBehavior dragger;
-    public DotsScriptableObject[] dots;
+    [HideInInspector] public TileDraggerBehavior dragger;
+    [HideInInspector] public TileAnimator animator;
+    private TileProperties _props;
+    public TileProperties Props {get;private set;}   
+    [HideInInspector] public TileGraphicsContentView view;
+    
+    public TileTypeScriptableObject[] dots;
     public SpriteRenderer dotSpriteRender;
     public SpriteRenderer selectionSpriteRender;
-
-    [HideInInspector] public DotsScriptableObject selectedDot;
-
+    [HideInInspector] public TileTypeScriptableObject selectedDot;
     [HideInInspector] public TileSwipeEvent OnTileDragged = new TileSwipeEvent();
-    [HideInInspector] public UnityEvent<Tile> OnTileSwipeAnimationCompled = new UnityEvent<Tile>();
+    [HideInInspector] public UnityEvent<TileManager> OnTileSwipeAnimationCompled = new UnityEvent<TileManager>();
 
-    private Tile targetTile;
+
+    public void setTileContentProperties(TileProperties new_properties)
+    {
+        this._props = new_properties;
+        // animate the transition
+    }
+    
+
+    private TileManager targetTile;
     private Vector3 targetTilePosition;
     private int targetTileIndexX;
     private int targetTileIndexY;
     bool animateMovement = false;
     bool _isPartOfMatch = false;
-    public void StartMovementTowards(Tile targetTile)
+    public void StartMovementTowards(TileManager targetTile)
     {
         this.targetTile = targetTile;
         this.targetTilePosition = targetTile.transform.position;
@@ -59,9 +70,9 @@ public class Tile : MonoBehaviour
 
     public void Start()
     {
-        dragger = this.gameObject.GetComponent<DraggerBehavior>();
+        dragger = this.gameObject.GetComponent<TileDraggerBehavior>();
         dragger.onDragEnded.AddListener(this.OnCurrentTileDragStart);
-        selectionSpriteRender = this.GetComponent<SpriteRenderer>();
+        
         Initialise();
 
     }
@@ -72,10 +83,8 @@ public class Tile : MonoBehaviour
             selectionSpriteRender.color = Color.green;
         else
             selectionSpriteRender.color = Color.white;
-
-
     }
-    void OnCurrentTileDragStart(DraggerBehavior d)
+    void OnCurrentTileDragStart(TileDraggerBehavior d)
     {
         OnTileDragged.Invoke(new TileSwipeEventArgs(this, d.DirectionX, d.DirectionY));
     }
