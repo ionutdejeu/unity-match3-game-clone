@@ -13,7 +13,7 @@ public class TileGraphicsContentView : MonoBehaviour
 
     private void Start()
     {
-        selectionSpriteRender = this.GetComponent<SpriteRenderer>();
+        //selectionSpriteRender = this.GetComponent<SpriteRenderer>();
     }
     public void hidrate(TileProperties props)
     {

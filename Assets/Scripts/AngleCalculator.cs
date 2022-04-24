@@ -25,7 +25,7 @@ public class AngleCalculator
             {
                 if (tiles[i, j].x == targetIndexX && tiles[i, j].y == targetIndexY)
                 {
-                    Debug.Log($"found target tile with x:{targetIndexX} and y:{targetIndexY} at index: {i},{j} ");
+                    Debug.Log($"found target tile with x:{targetIndexX} and y:{targetIndexY} at index: {i},{j}, {tiles[i, j].tileRef.Props} ");
                     return tiles[i, j].tileRef;
                 }
             }
@@ -33,6 +33,37 @@ public class AngleCalculator
         return sourceTile;
                 
     }
+    public static BoardPlaceholderProperties GetBoardPlaceholder(BoardPlaceholderProperties[,] tiles, TileManager tileRef)
+    {
+        return tiles[tileRef.Props.x, tileRef.Props.y];
+    }
+    public static BoardPlaceholderProperties GetBoardPlaceholderBasedOnSwipeDirection(BoardPlaceholderProperties[,] tiles, TileManager sourceTile, Vector2 swipeDirection, int boardWidht, int boardHeight)
+    {
+        Debug.Log($"Source index x:{sourceTile.Props.x} and y:{sourceTile.Props.y}");
+        
+        int targetIndexX = sourceTile.Props.x - ((int)swipeDirection.x);
+        int targetIndexY = sourceTile.Props.y - ((int)swipeDirection.y);
+
+        if (targetIndexX >= boardWidht) return GetBoardPlaceholder(tiles,sourceTile);
+        if (targetIndexY >= boardHeight) return GetBoardPlaceholder(tiles, sourceTile);
+        if (targetIndexY < 0) return GetBoardPlaceholder(tiles, sourceTile);
+        if (targetIndexX < 0) return GetBoardPlaceholder(tiles, sourceTile);
+
+        for (int i = 0; i < boardWidht; i++)
+        {
+            for (int j = 0; j < boardHeight; j++)
+            {
+                if (tiles[i, j].x == targetIndexX && tiles[i, j].y == targetIndexY)
+                {
+                    Debug.Log($"found target tile with x:{targetIndexX} and y:{targetIndexY} at index: {i},{j}, {tiles[i, j].tileRef.Props} ");
+                    return tiles[i, j];
+                }
+            }
+        }
+        return GetBoardPlaceholder(tiles, sourceTile);
+
+    }
+
     public static Vector2? DirectionVectorToAxis(Vector3 dir,float threshold = 0.8f)
     {
         dir.Normalize();

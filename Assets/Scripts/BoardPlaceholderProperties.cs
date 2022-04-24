@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
-public struct BoardPlaceholderProperties
+public class BoardPlaceholderProperties
 {
     public int x;
     public int y;

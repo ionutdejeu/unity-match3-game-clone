@@ -5,6 +5,7 @@ using UnityEngine.Events;
 
 public class BoardHelper
 {
+
     public static BoardPlaceholderProperties[,] GenerateInitialBoard(int boardWidth, int boardHeight)
     {
         BoardPlaceholderProperties[,] allTilesContent = new BoardPlaceholderProperties[boardWidth,boardHeight];
@@ -13,6 +14,7 @@ public class BoardHelper
         {
             for (int j = 0; j < boardHeight; j++)
             {
+                allTilesContent[i, j] = new BoardPlaceholderProperties();
                 allTilesContent[i, j].x = i;
                 allTilesContent[i, j].y = j;
                 allTilesContent[i, j].worldPos = new Vector3(i,j,-1);
@@ -20,6 +22,69 @@ public class BoardHelper
         }
         
         return allTilesContent;
+    }
+
+    public static BoardPlaceholderProperties[,] GenerateInitialBoardWithoutMatches(int boardWidth, int boardHeight)
+    {
+        BoardPlaceholderProperties[,] allTilesContent = new BoardPlaceholderProperties[boardWidth, boardHeight];
+        // recompute the tiles based on index;
+        for (int i = 0; i < boardWidth; i++)
+        {
+            for (int j = 0; j < boardHeight; j++)
+            {
+                allTilesContent[i, j] = new BoardPlaceholderProperties();
+                allTilesContent[i, j].x = i;
+                allTilesContent[i, j].y = j;
+                allTilesContent[i, j].worldPos = new Vector3(i, j, -1);
+            }
+        }
+
+        return allTilesContent;
+    }
+
+    public static void AssingTilesToBoardPlaceholdersWithoutMatches(
+        TileTypeScriptableObject[] possibleTypes,
+        BoardPlaceholderProperties[,] boardPlaceholders,
+        int boardWidth,
+        int boardHeight,
+        GameObject boardTilePrefab,
+        GameObject parent,
+        UnityAction<TileSwipeEventArgs> onTileDraggedHandler,
+        UnityAction<TileManager> onSwipeAnimationCompletedHandler,
+        UnityAction<TileSwapEventArgs> onTileSwapCompletedEventHandler)
+    {
+        for (int i = 0; i < boardWidth; i++)
+        {
+            for (int j = 0; j < boardHeight; j++)
+            {
+                List<TileManager> matchingTiles = new List<TileManager>();
+                int randDot = 0;
+                
+
+                GameObject tileInstance = GameObject.Instantiate(boardTilePrefab, boardPlaceholders[i, j].worldPos, Quaternion.identity);
+                TileManager tm = tileInstance.GetComponent<TileManager>();
+                tileInstance.transform.parent = parent.transform;
+                tileInstance.name = "item (" + i + ", " + j + ")";
+                TileProperties tileProps = new TileProperties();
+                tileProps.x = boardPlaceholders[i, j].x;
+                tileProps.y = boardPlaceholders[i, j].y;
+                tileProps.worldPos = boardPlaceholders[i, j].worldPos;
+                boardPlaceholders[i, j].tileRef = tm;
+                
+                do
+                {
+                    randDot = UnityEngine.Random.Range(0, possibleTypes.Length);
+                    tileProps.type = possibleTypes[randDot];
+                    tm.setTileContentProperties(tileProps);
+                    matchingTiles = FindMatchesAroundTheSpecifiedIndex(boardPlaceholders, boardWidth, boardHeight, i, j);
+                } while (matchingTiles.Count > 0);
+                
+                tm.OnTileDragged.AddListener(onTileDraggedHandler);
+                tm.OnTileSwipeAnimationCompled.AddListener(onSwipeAnimationCompletedHandler);
+                tm.OnTileSwapCompleted.AddListener(onTileSwapCompletedEventHandler);
+                
+            }
+        }
     }
 
 
@@ -31,7 +96,8 @@ public class BoardHelper
         GameObject boardTilePrefab,
         GameObject parent,
         UnityAction<TileSwipeEventArgs> onTileDraggedHandler,
-        UnityAction<TileManager> onSwipeAnimationCompletedHandler)
+        UnityAction<TileManager> onSwipeAnimationCompletedHandler,
+        UnityAction<TileSwapEventArgs> onTileSwapCompletedEventHandler)
     {
         for (int i = 0; i < boardWidth; i++)
         {
@@ -51,12 +117,29 @@ public class BoardHelper
                 tm.setTileContentProperties(tileProps);
                 tm.OnTileDragged.AddListener(onTileDraggedHandler);
                 tm.OnTileSwipeAnimationCompled.AddListener(onSwipeAnimationCompletedHandler);
+                tm.OnTileSwapCompleted.AddListener(onTileSwapCompletedEventHandler);
                 boardPlaceholders[i, j].tileRef = tm;
-
             }
         }
     }
+    public static List<List<TileManager>> FindMatchingTiles2(BoardPlaceholderProperties[,] board, int boardWidht, int boardHeight)
+    {
+        List<List<TileManager>> matchingTiles = new List<List<TileManager>>();
+        for (int i = 0; i < boardWidht; i++)
+        {
+            for (int j = 0; j < boardHeight; j++)
+            {
+                List<TileManager> matchesFound = FindMatchesAroundTheSpecifiedIndex(board, boardWidht, boardHeight, i, j);
+                if (matchesFound.Count > 0)
+                {
+                    matchesFound.Add(board[i,j].tileRef);
+                    matchingTiles.Add(matchesFound);
+                }
 
+            }
+        }
+        return matchingTiles;
+    }
     public static List<List<TileManager>> FindMatchingTiles(BoardPlaceholderProperties[,] board, int boardWidht, int boardHeight)
     {
         List<List<TileManager>> matchingTiles = new List<List<TileManager>>();
@@ -85,21 +168,21 @@ public class BoardHelper
             }
             foreach (TileManager t in entry.Value)
             {
-                //mappedTilesOfOneTypes[t.IndexX, t.IndexY] = t;
+                mappedTilesOfOneTypes[t.Props.x,t.Props.y] = t;
             }
 
             foreach (TileManager t in entry.Value)
             {
-                //List<TileManager> matchesInRow = GetCountOfMatchingTilesInRow(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
-                //if (matchesInRow.Count > 0)
-                //{
-                //    matchingTiles.Add(matchesInRow);
-                //}
-                //List<TileManager> matchesInCol = GetCountOfMatchingTilesInColumn(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
-                //if (matchesInCol.Count > 0)
-                //{
-                //    matchingTiles.Add(matchesInCol);
-                //}
+                List<TileManager> matchesInRow = GetCountOfMatchingTilesInRow(mappedTilesOfOneTypes, boardWidht, boardHeight, t.Props.x, t.Props.y);
+                if (matchesInRow.Count > 0)
+                {
+                    matchingTiles.Add(matchesInRow);
+                }
+                List<TileManager> matchesInCol = GetCountOfMatchingTilesInColumn(mappedTilesOfOneTypes, boardWidht, boardHeight, t.Props.x, t.Props.y);
+                if (matchesInCol.Count > 0)
+                {
+                    matchingTiles.Add(matchesInCol);
+                }
             }
         }
         return matchingTiles;
@@ -108,21 +191,21 @@ public class BoardHelper
     public static List<List<TileManager>> FindMatchingTiles(TileManager[,] board,int boardWidht,int boardHeight)
     {
         List<List<TileManager>> matchingTiles = new List<List<TileManager>>();
-        Dictionary<TileTypeScriptableObject, List<TileManager>> mappedTiles = new Dictionary<TileTypeScriptableObject, List<TileManager>>();
+        Dictionary<string, List<TileManager>> mappedTiles = new Dictionary<string, List<TileManager>>();
 
         // recompute the tiles based on index;
         for (int i = 0; i < boardWidht; i++)
         {
             for (int j = 0; j < boardHeight; j++)
             {
-                if (!mappedTiles.ContainsKey(board[i, j].selectedDot))
+                if (!mappedTiles.ContainsKey(board[i, j].Props.type.name))
                 {
-                    mappedTiles.Add(board[i, j].selectedDot, new List<TileManager>());
+                    mappedTiles.Add(board[i, j].Props.type.name, new List<TileManager>());
                 }
-                mappedTiles[board[i, j].selectedDot].Add(board[i, j]);
+                mappedTiles[board[i, j].Props.type.name].Add(board[i, j]);
             }
         }
-        foreach (KeyValuePair<TileTypeScriptableObject, List<TileManager>> entry in mappedTiles)
+        foreach (KeyValuePair<string, List<TileManager>> entry in mappedTiles)
         {
             TileManager[,] mappedTilesOfOneTypes = new TileManager[boardWidht, boardHeight];
             for (int i = 0; i < boardWidht; i++)
@@ -134,21 +217,21 @@ public class BoardHelper
             }
             foreach (TileManager t in entry.Value)
             {
-                //mappedTilesOfOneTypes[t.IndexX, t.IndexY] = t;
+                mappedTilesOfOneTypes[t.Props.x, t.Props.y] = t;
             }
 
             foreach (TileManager t in entry.Value)
             {
-                //List<TileManager> matchesInRow = GetCountOfMatchingTilesInRow(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
-                //if (matchesInRow.Count>0)
-                //{
-                //    matchingTiles.Add(matchesInRow);
-                //}
-                //List<TileManager> matchesInCol = GetCountOfMatchingTilesInColumn(mappedTilesOfOneTypes, boardWidht, boardHeight, t.IndexX, t.IndexY);
-                //if (matchesInCol.Count > 0)
-                //{
-                //    matchingTiles.Add(matchesInCol);
-                //}
+                List<TileManager> matchesInRow = GetCountOfMatchingTilesInRow(mappedTilesOfOneTypes, boardWidht, boardHeight, t.Props.x, t.Props.y);
+                if (matchesInRow.Count>0)
+                {
+                    matchingTiles.Add(matchesInRow);
+                }
+                List<TileManager> matchesInCol = GetCountOfMatchingTilesInColumn(mappedTilesOfOneTypes, boardWidht, boardHeight, t.Props.x, t.Props.y);
+                if (matchesInCol.Count > 0)
+                {
+                    matchingTiles.Add(matchesInCol);
+                }
             }
         }
         return matchingTiles;
@@ -195,9 +278,130 @@ public class BoardHelper
             if(foundRight1)
             matchFound.Add(matchingTileMatrix[rightIndex, sourceY]);
         }
+        if (matchFound.Count > 0)
+        {
+            matchFound.Add(matchingTileMatrix[sourceX, sourceY]);
+        }
         return matchFound;
     }
+    public static void DestroyMatchedTiles(List<TileManager> matchedTiles)
+    {
+        foreach(TileManager t in matchedTiles)
+        {
+            t.animateDestroy();
+        }
+    }
+    public BoardPlaceholderProperties[] CreateTileSpawnPositions(int count)
+    {
 
+        BoardPlaceholderProperties[] spawnPositions = new BoardPlaceholderProperties[count];
+        // make sure to spawn them outside of the screen
+
+        for (int i = 0; i < count; i++)
+        {
+            BoardPlaceholderProperties sp  = new BoardPlaceholderProperties();
+            sp.worldPos = new Vector3(i, 10, 0);
+            sp.x = i;
+            sp.y = 0;
+            spawnPositions[i] = sp;
+        }
+
+        return spawnPositions;
+    }
+    public static void ReplenishBoard(BoardPlaceholderProperties[,] boardTiles)
+    {
+
+    }
+
+    
+    public static BoardPlaceholderProperties FindTargetToMoveTheTileAfterDestroy(BoardPlaceholderProperties[,] board, int boardWidth, int boardHeight, int x, int y)
+    {
+        //look downwards for the specified tile
+        for (int i = y - 1; i >= 0; i--)
+        {
+            if (board[x, i].tileRef == null && board[x, i].tileRef.isActiveAndEnabled)
+            {
+                return board[x, i];
+            }
+        }
+        return null;
+    }
+
+    public static List<TileManager> FindMatchesAroundTheSpecifiedIndex(BoardPlaceholderProperties[,] board, int boardWithd, int boardHeight,int x,int y)
+    {
+        List<TileManager> matchFound = new List<TileManager>();
+        // loop starting from the central point all directions
+        // loop in the left of the specified index
+        string sourceTileType = board[x, y].tileRef.Props.type.name;
+
+        List<TileManager> leftMatches = new List<TileManager>();
+        for(int i = x-1; i >= 0; i--)
+        {
+            if (board[i, y].tileRef == null ||
+                board[i, y].tileRef.Props.type.name != sourceTileType)
+            {
+                break;
+            }
+            leftMatches.Add(board[i, y].tileRef);
+        }
+        if (leftMatches.Count > 1)
+        {
+            matchFound.AddRange(leftMatches);
+        }
+
+        // loop thorught all the tiles in the right of the source tile
+        List<TileManager> rightMatches = new List<TileManager>();
+        for (int i = x + 1; i < boardWithd; i++)
+        {
+            if (board[i, y].tileRef == null ||
+                board[i, y].tileRef.Props.type.name != sourceTileType)
+            {
+                break;
+            }
+            rightMatches.Add(board[i, y].tileRef);
+        }
+        if (rightMatches.Count > 1)
+        {
+            matchFound.AddRange(rightMatches);
+        }
+
+        // loop thorught all the tiles in the right of the source tile
+        List<TileManager> downMatches = new List<TileManager>();
+        for (int i = y - 1; i >=0; i--)
+        {
+            if (board[x, i].tileRef == null ||
+                board[x, i].tileRef.Props.type.name != sourceTileType)
+            {
+                break;
+            }
+            downMatches.Add(board[x, i].tileRef);
+        }
+        if (downMatches.Count > 1)
+        {
+            matchFound.AddRange(downMatches);
+        }
+
+        // loop thorught all the tiles in the right of the source tile 
+        List<TileManager> upMatches = new List<TileManager>();
+
+        for (int i = y + 1; i < boardHeight; i++)
+        {
+            if (board[x, i].tileRef == null ||
+                board[x, i].tileRef.Props.type.name != sourceTileType)
+            {
+                break;
+            }
+            upMatches.Add(board[x, i].tileRef);
+        }
+        if (upMatches.Count > 1)
+        {
+            matchFound.AddRange(upMatches);
+        }
+
+
+
+        return matchFound;
+    }
     public static List<TileManager> GetCountOfMatchingTilesInColumn(TileManager[,] matchingTileMatrix, int boardWithd, int boardHeight, int sourceX, int sourceY)
     {
         List<TileManager> matchFound = new List<TileManager>();
@@ -206,35 +410,39 @@ public class BoardHelper
         int downIndex = Math.Clamp(sourceY - 1, 0, boardHeight-1);
         int down2Index = Math.Clamp(sourceY - 2, 0, boardHeight-1);
         Debug.Log($"checking on x:{sourceX},y:{upIndex}");
-        bool foundUp1 = matchingTileMatrix[sourceX, upIndex] != null && upIndex != sourceY;
-        bool foundUp2 = matchingTileMatrix[sourceX, up2Index] != null && up2Index != sourceY;
-        bool foundDown1 = matchingTileMatrix[sourceX, downIndex] != null && downIndex != sourceY;
-        bool foundDown2 = matchingTileMatrix[sourceX, down2Index] != null && down2Index != sourceY;
+        bool up1 = matchingTileMatrix[sourceX, upIndex] != null && upIndex != sourceY;
+        bool up2 = matchingTileMatrix[sourceX, up2Index] != null && up2Index != sourceY;
+        bool down1 = matchingTileMatrix[sourceX, downIndex] != null && downIndex != sourceY;
+        bool down2 = matchingTileMatrix[sourceX, down2Index] != null && down2Index != sourceY;
 
-        bool matchedUp = foundUp1 && foundUp2;
-        bool matchedDown = foundDown1 && foundDown2;
-        bool matchedBothSides = !foundDown2 && foundDown1 && foundUp1 && !foundDown2;
-        bool bonusMatchedAllSides = foundDown2 && foundDown1 && foundUp1 && foundDown2;
+        bool matchedUp = up1 && up2;
+        bool matchedDown = down1 && down2;
+        bool matchedBothSides = !down2 && down1 && up1 && !up2;
+        bool bonusMatchedAllSides = down2 && down1 && up2 && up1;
 
         if (bonusMatchedAllSides || matchedDown)
         {
-            if(foundDown2)
+            if(down2)
             matchFound.Add(matchingTileMatrix[sourceX,down2Index]);
-            if(foundDown1)
+            if(down1)
             matchFound.Add(matchingTileMatrix[sourceX,downIndex]);
         }
 
         if (bonusMatchedAllSides || matchedUp)
         {
-            if(foundUp1)
+            if(up1)
             matchFound.Add(matchingTileMatrix[sourceX,upIndex]);
-            if(foundUp2)
+            if(up2)
             matchFound.Add(matchingTileMatrix[sourceX,up2Index]);
         }
         if (matchedBothSides)
         {
             matchFound.Add(matchingTileMatrix[sourceX,downIndex]);
             matchFound.Add(matchingTileMatrix[sourceX,upIndex]);
+        }
+        if (matchFound.Count > 0)
+        {
+            matchFound.Add(matchingTileMatrix[sourceX, sourceY]);
         }
         return matchFound;
     }
