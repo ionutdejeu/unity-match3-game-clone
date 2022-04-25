@@ -21,8 +21,6 @@ public class SwipeTileAnimation
         newInstance.tileBPlaceholder = to;
         newInstance.tileAManager = from.tileRef;
         newInstance.tileBManager = to.tileRef;
-        
-
 
         return newInstance;
     }
@@ -51,8 +49,8 @@ public class SwipeTileAnimation
         if (Vector3.Magnitude(tileAPlaceholder.worldPos - tileBManager.transform.position) < 0.05f)
         {
             //snap the tile to position
-            tileBManager.transform.position = tileBPlaceholder.worldPos;
-            tileACompleted = true;
+            tileBManager.transform.position = tileAPlaceholder.worldPos;
+            tileBCompleted = true;
 
         }
     }
@@ -62,8 +60,11 @@ public class SwipeTileAnimation
             tryUpdateATile();
         if (!tileBCompleted)
             tryUpdateBTile();
-        if (tileBCompleted && tileBCompleted)
+        if (tileBCompleted && tileBCompleted) {
+            Debug.Log("SWIPE ANIMATION COMPLETED");
             isActive = false;
+
+        }
 
     }
 }

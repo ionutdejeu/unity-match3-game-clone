@@ -361,6 +361,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2040440447}
   - component: {fileID: 2040440448}
+  - component: {fileID: 2040440449}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -402,3 +403,24 @@ MonoBehaviour:
   dots:
   - {fileID: 11400000, guid: cc1c6b1dc44504d38ac25be065b4d982, type: 2}
   - {fileID: 11400000, guid: b4f69a42c4b6e4e5d9201ba92f116667, type: 2}
+--- !u!114 &2040440449
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2040440446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a891dca5164b3407a8557b2f6ca10e2b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OnSwapAnimationCompleted:
+    m_PersistentCalls:
+      m_Calls: []
+  OnMoveTilesWithinBoardCompleted:
+    m_PersistentCalls:
+      m_Calls: []
+  OnMoveTilesFromOutsideCompleted:
+    m_PersistentCalls:
+      m_Calls: []

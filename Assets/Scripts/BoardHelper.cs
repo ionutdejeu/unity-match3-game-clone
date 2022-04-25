@@ -41,9 +41,53 @@ public class BoardHelper
 
         return allTilesContent;
     }
+    public static TileTypeScriptableObject[,] FindBoardSolutionWithoutMatches(
+         TileTypeScriptableObject[] possibleTypes,
+        int boardWidth,
+        int boardHeight
+        )
+    {
+        TileTypeScriptableObject[,] possibleBoardSolution;
+        do
+        {
+            possibleBoardSolution = TryFindBoardSolutionWithoutMatches(possibleTypes, boardWidth, boardHeight);
 
-    public static void AssingTilesToBoardPlaceholdersWithoutMatches(
+        } while (possibleBoardSolution == null);
+        return possibleBoardSolution;
+    }
+    public static TileTypeScriptableObject[,]? TryFindBoardSolutionWithoutMatches(
         TileTypeScriptableObject[] possibleTypes,
+        int boardWidth,
+        int boardHeight)
+    {
+        TileTypeScriptableObject[,] boardTypes = new TileTypeScriptableObject[boardHeight, boardHeight];
+
+        for (int i = 0; i < boardWidth; i++)
+        {
+            for (int j = 0; j < boardHeight; j++)
+            {
+                List<TileTypeScriptableObject> matchingTiles = new List<TileTypeScriptableObject>();
+                int findRandomMatchRetries = 0;
+                do
+                {
+                    int randDot = UnityEngine.Random.Range(0, possibleTypes.Length);
+                    boardTypes[i, j] = possibleTypes[randDot];
+                    matchingTiles = FindMatchingTypes(boardTypes, boardWidth, boardHeight, i, j);
+                    findRandomMatchRetries++;
+                } while (findRandomMatchRetries < 3 && matchingTiles.Count > 0);
+                if (findRandomMatchRetries >= 3)
+                {
+                    return null;
+                }
+
+            }
+
+        }
+
+        return boardTypes;
+    }
+    public static void AssingTilesToBoardPlaceholdersWithoutMatches(
+        TileTypeScriptableObject[,] boardTypes,
         BoardPlaceholderProperties[,] boardPlaceholders,
         int boardWidth,
         int boardHeight,
@@ -53,37 +97,38 @@ public class BoardHelper
         UnityAction<TileManager> onSwipeAnimationCompletedHandler,
         UnityAction<TileSwapEventArgs> onTileSwapCompletedEventHandler)
     {
-        for (int i = 0; i < boardWidth; i++)
+        bool boardGenerationCompleted = false;
+        while (!boardGenerationCompleted)
         {
-            for (int j = 0; j < boardHeight; j++)
+            for (int i = 0; i < boardWidth; i++)
             {
-                List<TileManager> matchingTiles = new List<TileManager>();
-                int randDot = 0;
+                for (int j = 0; j < boardHeight; j++)
+                {
+                    
+
+                    GameObject tileInstance = GameObject.Instantiate(boardTilePrefab, boardPlaceholders[i, j].worldPos, Quaternion.identity);
+                    TileManager tm = tileInstance.GetComponent<TileManager>();
+                    tileInstance.transform.parent = parent.transform;
+                    tileInstance.name = "item (" + i + ", " + j + ")";
+                    TileProperties tileProps = new TileProperties();
+                    tileProps.x = boardPlaceholders[i, j].x;
+                    tileProps.y = boardPlaceholders[i, j].y;
+                    tileProps.worldPos = boardPlaceholders[i, j].worldPos;
+                    boardPlaceholders[i, j].tileRef = tm;
+                    int findRandomMatchRetries = 0;
+                    tileProps.type = boardTypes[i, j];
+                    tm.setTileContentProperties(tileProps);
+
                 
 
-                GameObject tileInstance = GameObject.Instantiate(boardTilePrefab, boardPlaceholders[i, j].worldPos, Quaternion.identity);
-                TileManager tm = tileInstance.GetComponent<TileManager>();
-                tileInstance.transform.parent = parent.transform;
-                tileInstance.name = "item (" + i + ", " + j + ")";
-                TileProperties tileProps = new TileProperties();
-                tileProps.x = boardPlaceholders[i, j].x;
-                tileProps.y = boardPlaceholders[i, j].y;
-                tileProps.worldPos = boardPlaceholders[i, j].worldPos;
-                boardPlaceholders[i, j].tileRef = tm;
-                
-                do
-                {
-                    randDot = UnityEngine.Random.Range(0, possibleTypes.Length);
-                    tileProps.type = possibleTypes[randDot];
-                    tm.setTileContentProperties(tileProps);
-                    matchingTiles = FindMatchesAroundTheSpecifiedIndex(boardPlaceholders, boardWidth, boardHeight, i, j);
-                } while (matchingTiles.Count > 0);
-                
-                tm.OnTileDragged.AddListener(onTileDraggedHandler);
-                tm.OnTileSwipeAnimationCompled.AddListener(onSwipeAnimationCompletedHandler);
-                tm.OnTileSwapCompleted.AddListener(onTileSwapCompletedEventHandler);
-                
+                    tm.OnTileDragged.AddListener(onTileDraggedHandler);
+                    tm.OnTileSwipeAnimationCompled.AddListener(onSwipeAnimationCompletedHandler);
+                    tm.OnTileSwapCompleted.AddListener(onTileSwapCompletedEventHandler);
+
+                }
             }
+            boardGenerationCompleted = true;
+
         }
     }
 
@@ -326,7 +371,81 @@ public class BoardHelper
         }
         return null;
     }
+    public static List<TileTypeScriptableObject> FindMatchingTypes(TileTypeScriptableObject[,] boardTileTypes,int boardWidth,int boardHeight,int x, int y)
+    {
+        List<TileTypeScriptableObject> matchFound = new List<TileTypeScriptableObject>();
+        // loop starting from the central point all directions
+        // loop in the left of the specified index
+        string sourceTileType = boardTileTypes[x, y].name;
 
+        List<TileTypeScriptableObject> leftMatches = new List<TileTypeScriptableObject>();
+        for (int i = x - 1; i >= 0; i--)
+        {
+            if (boardTileTypes[i, y] == null ||
+                boardTileTypes[i, y].name != sourceTileType)
+            {
+                break;
+            }
+            leftMatches.Add(boardTileTypes[i, y]);
+        }
+        if (leftMatches.Count > 1)
+        {
+            matchFound.AddRange(leftMatches);
+        }
+
+        // loop thorught all the tiles in the right of the source tile
+        List<TileTypeScriptableObject> rightMatches = new List<TileTypeScriptableObject>();
+        for (int i = x + 1; i < boardWidth; i++)
+        {
+            if (boardTileTypes[i, y] == null ||
+                boardTileTypes[i, y].name != sourceTileType)
+            {
+                break;
+            }
+            rightMatches.Add(boardTileTypes[i, y]);
+        }
+        if (rightMatches.Count > 1)
+        {
+            matchFound.AddRange(rightMatches);
+        }
+
+        // loop thorught all the tiles in the right of the source tile
+        List<TileTypeScriptableObject> downMatches = new List<TileTypeScriptableObject>();
+        for (int i = y - 1; i >= 0; i--)
+        {
+            if (boardTileTypes[x, i] == null ||
+                boardTileTypes[x, i].name != sourceTileType)
+            {
+                break;
+            }
+            downMatches.Add(boardTileTypes[x, i]);
+        }
+        if (downMatches.Count > 1)
+        {
+            matchFound.AddRange(downMatches);
+        }
+
+        // loop thorught all the tiles in the right of the source tile 
+        List<TileTypeScriptableObject> upMatches = new List<TileTypeScriptableObject>();
+
+        for (int i = y + 1; i < boardHeight; i++)
+        {
+            if (boardTileTypes[x, i] == null ||
+                boardTileTypes[x, i].name != sourceTileType)
+            {
+                break;
+            }
+            upMatches.Add(boardTileTypes[x, i]);
+        }
+        if (upMatches.Count > 1)
+        {
+            matchFound.AddRange(upMatches);
+        }
+
+
+
+        return matchFound;
+    }
     public static List<TileManager> FindMatchesAroundTheSpecifiedIndex(BoardPlaceholderProperties[,] board, int boardWithd, int boardHeight,int x,int y)
     {
         List<TileManager> matchFound = new List<TileManager>();

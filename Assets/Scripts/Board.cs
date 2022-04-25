@@ -15,8 +15,14 @@ public class Board : MonoBehaviour
     public TileTypeScriptableObject[] dots;
 
     [SerializeField] private BoardPlaceholderProperties[,] boardSlots;
-    
-    
+    BoardAnimationManager animManager;
+
+    private void Awake()
+    {
+        animManager = GetComponent<BoardAnimationManager>();
+        animManager.OnSwapAnimationCompleted.AddListener(this.OnTileSwapAnimationCompleted);
+
+    }
     // Start is called before the first frame update
     void Start()
     {
@@ -36,31 +42,44 @@ public class Board : MonoBehaviour
         BoardPlaceholderProperties sourcePlaceholder = AngleCalculator.GetBoardPlaceholder(boardSlots, args.tile);
         BoardPlaceholderProperties targetPlaceholder = AngleCalculator.GetBoardPlaceholder(boardSlots, target);
 
-        TileSwapEventArgs sourceSwapEventsArgs = new TileSwapEventArgs()
-        {
-            sourcePlaceholder = targetPlaceholder,
-            targetPlaceholder = sourcePlaceholder,
-            sourceTile = target,
-            targetTile = args.tile,
-            refreshMatches = false
-        };
-
-        TileSwapEventArgs targetSwapEventsArgs = new TileSwapEventArgs()
-        {
-            sourcePlaceholder = sourcePlaceholder,
-            targetPlaceholder = targetPlaceholder,
-            sourceTile = args.tile,
-            targetTile = target,
-            refreshMatches = true
-        };
-
-        if (target != args.tile)
-        {
-            target.swapTilePlaceholder(sourceSwapEventsArgs);
-            args.tile.swapTilePlaceholder(targetSwapEventsArgs);
-        }
+        //TileSwapEventArgs sourceSwapEventsArgs = new TileSwapEventArgs()
+        //{
+        //    sourcePlaceholder = targetPlaceholder,
+        //    targetPlaceholder = sourcePlaceholder,
+        //    sourceTile = target,
+        //    targetTile = args.tile,
+        //    refreshMatches = false
+        //};
+        //
+        //TileSwapEventArgs targetSwapEventsArgs = new TileSwapEventArgs()
+        //{
+        //    sourcePlaceholder = sourcePlaceholder,
+        //    targetPlaceholder = targetPlaceholder,
+        //    sourceTile = args.tile,
+        //    targetTile = target,
+        //    refreshMatches = true
+        //};
+        //
+        //
+        //if (target != args.tile)
+        //{
+        //    target.swapTilePlaceholder(sourceSwapEventsArgs);
+        //    args.tile.swapTilePlaceholder(targetSwapEventsArgs);
+        //}
+        animManager.AddSwipeAnim(SwipeTileAnimation.CreateInstance(sourcePlaceholder, targetPlaceholder));
+        
     }
+    void OnTileSwapAnimationCompleted(SwipeTileAnimation args)
+    {
+        Debug.Log("new Swipe Anim Completed ref :" + args.tileAManager.Props);
+        args.tileAPlaceholder.tileRef = args.tileBManager;
+        args.tileBPlaceholder.tileRef = args.tileAManager;
+        args.tileAManager.setNewPlaceholder(args.tileBPlaceholder);
+        args.tileBManager.setNewPlaceholder(args.tileAPlaceholder);
+        //if (args.refreshMatches)
+        UpdateMatchedTiles();
 
+    }
 
     void OnTileSwapCompleted(TileSwapEventArgs args)
     {
@@ -115,8 +134,10 @@ public class Board : MonoBehaviour
 
     void setup()
     {
+
         boardSlots = BoardHelper.GenerateInitialBoard(width, height);
-        BoardHelper.AssingTilesToBoardPlaceholdersWithoutMatches(dots,
+        TileTypeScriptableObject[,] boardTileTypes = BoardHelper.FindBoardSolutionWithoutMatches(dots, width, height);
+        BoardHelper.AssingTilesToBoardPlaceholdersWithoutMatches(boardTileTypes,
             boardSlots,
             width,
             height,
