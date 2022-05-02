@@ -60,10 +60,8 @@ public class SwipeTileAnimation
             tryUpdateATile();
         if (!tileBCompleted)
             tryUpdateBTile();
-        if (tileBCompleted && tileBCompleted) {
-            Debug.Log("SWIPE ANIMATION COMPLETED");
+        if (tileBCompleted && tileBCompleted) { 
             isActive = false;
-
         }
 
     }

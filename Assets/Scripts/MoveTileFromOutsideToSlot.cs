@@ -16,10 +16,7 @@ public class MoveTileFromOutsideToSlot
         movingAnim.tileToMove = tileToMove;
         return movingAnim;
     }
-    public MoveTileFromOutsideToSlot()
-    {
-
-    }
+     
 
     void tryUpdateTile()
     {

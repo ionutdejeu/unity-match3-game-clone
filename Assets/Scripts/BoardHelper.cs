@@ -185,6 +185,27 @@ public class BoardHelper
         }
         return matchingTiles;
     }
+    public static List<List<BoardPlaceholderProperties>> FindMatchingPlaceholders(BoardPlaceholderProperties[,] board, int boardWidht, int boardHeight)
+    {
+        List<List<BoardPlaceholderProperties>> matchingTiles = new List<List<BoardPlaceholderProperties>>();
+        for (int i = 0; i < boardWidht; i++)
+        {
+            for (int j = 0; j < boardHeight; j++)
+            {
+                if (board[i, j].tileRef)
+                {
+                    List<BoardPlaceholderProperties> matchesFound = FindMatchingPlaceholderAroundTheSpecifiedIndex(board, boardWidht, boardHeight, i, j);
+                    if (matchesFound.Count > 0)
+                    {
+                        matchesFound.Add(board[i, j]);
+                        matchingTiles.Add(matchesFound);
+                    }
+                }
+            }
+
+        }
+        return matchingTiles;
+    }
     public static List<List<TileManager>> FindMatchingTiles(BoardPlaceholderProperties[,] board, int boardWidht, int boardHeight)
     {
         List<List<TileManager>> matchingTiles = new List<List<TileManager>>();
@@ -329,11 +350,16 @@ public class BoardHelper
         }
         return matchFound;
     }
-    public static void DestroyMatchedTiles(List<TileManager> matchedTiles)
-    {
-        foreach(TileManager t in matchedTiles)
+    public static void DestroyMatchedTiles(List<BoardPlaceholderProperties> matchedTiles)
+    { 
+        foreach(BoardPlaceholderProperties t in matchedTiles)
         {
-            t.animateDestroy();
+            if (t.tileRef)
+            {
+                t.tileRef.animateDestroy();
+                GameObject.Destroy(t.tileRef.gameObject);
+                t.tileRef = null;
+            }
         }
     }
     public BoardPlaceholderProperties[] CreateTileSpawnPositions(int count)
@@ -357,7 +383,7 @@ public class BoardHelper
     {
 
     }
-
+    
     
     public static BoardPlaceholderProperties FindTargetToMoveTheTileAfterDestroy(BoardPlaceholderProperties[,] board, int boardWidth, int boardHeight, int x, int y)
     {
@@ -446,6 +472,79 @@ public class BoardHelper
 
         return matchFound;
     }
+    public static List<BoardPlaceholderProperties> FindMatchingPlaceholderAroundTheSpecifiedIndex(BoardPlaceholderProperties[,] board, int boardWithd, int boardHeight, int x, int y)
+    {
+        List<BoardPlaceholderProperties> matchFound = new List<BoardPlaceholderProperties>();
+        // loop starting from the central point all directions
+        // loop in the left of the specified index
+
+        string sourceTileType = board[x, y].tileRef.Props.type.name;
+
+        List<BoardPlaceholderProperties> leftMatches = new List<BoardPlaceholderProperties>();
+        for (int i = x - 1; i >= 0; i--)
+        {
+            if (board[i, y].tileRef == null ||
+                board[i, y].tileRef.Props.type.name != sourceTileType)
+            {
+                break;
+            }
+            leftMatches.Add(board[i, y]);
+        }
+        if (leftMatches.Count > 1)
+        {
+            matchFound.AddRange(leftMatches);
+        }
+
+        // loop thorught all the tiles in the right of the source tile
+        List<BoardPlaceholderProperties> rightMatches = new List<BoardPlaceholderProperties>();
+        for (int i = x + 1; i < boardWithd; i++)
+        {
+            if (board[i, y].tileRef == null ||
+                board[i, y].tileRef.Props.type.name != sourceTileType)
+            {
+                break;
+            }
+            rightMatches.Add(board[i, y]);
+        }
+        if (rightMatches.Count > 1)
+        {
+            matchFound.AddRange(rightMatches);
+        }
+
+        // loop thorught all the tiles in the right of the source tile
+        List<BoardPlaceholderProperties> downMatches = new List<BoardPlaceholderProperties>();
+        for (int i = y - 1; i >= 0; i--)
+        {
+            if (board[x, i].tileRef == null ||
+                board[x, i].tileRef.Props.type.name != sourceTileType)
+            {
+                break;
+            }
+            downMatches.Add(board[x, i]);
+        }
+        if (downMatches.Count > 1)
+        {
+            matchFound.AddRange(downMatches);
+        }
+
+        // loop thorught all the tiles in the right of the source tile 
+        List<BoardPlaceholderProperties> upMatches = new List<BoardPlaceholderProperties>();
+
+        for (int i = y + 1; i < boardHeight; i++)
+        {
+            if (board[x, i].tileRef == null ||
+                board[x, i].tileRef.Props.type.name != sourceTileType)
+            {
+                break;
+            }
+            upMatches.Add(board[x, i]);
+        }
+        if (upMatches.Count > 1)
+        {
+            matchFound.AddRange(upMatches);
+        }
+        return matchFound;
+    }
     public static List<TileManager> FindMatchesAroundTheSpecifiedIndex(BoardPlaceholderProperties[,] board, int boardWithd, int boardHeight,int x,int y)
     {
         List<TileManager> matchFound = new List<TileManager>();
@@ -516,9 +615,6 @@ public class BoardHelper
         {
             matchFound.AddRange(upMatches);
         }
-
-
-
         return matchFound;
     }
     public static List<TileManager> GetCountOfMatchingTilesInColumn(TileManager[,] matchingTileMatrix, int boardWithd, int boardHeight, int sourceX, int sourceY)

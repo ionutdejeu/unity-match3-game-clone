@@ -6,8 +6,8 @@ using UnityEngine.Events;
 public class BoardAnimationManager : MonoBehaviour
 {
 
-    List<SwipeTileAnimation> swipeAnimations = new List<SwipeTileAnimation>();
-    List<MoveTileWithinBoard> moveTileWithinBoard = new List<MoveTileWithinBoard>();
+    List<SwipeTileAnimation> swipeAnimationList = new List<SwipeTileAnimation>();
+    List<MoveTileWithinBoard> moveTileWithinBoardList = new List<MoveTileWithinBoard>();
     List<MoveTileFromOutsideToSlot> moveTilesFromOutsideBoard = new List<MoveTileFromOutsideToSlot>();
     List<MoveTileWithinBoard> completedAnimsMovingTilesWithinBoard = new List<MoveTileWithinBoard>();
     List<MoveTileFromOutsideToSlot> completedAnimsMoveTilesFromOutsideBoard = new List<MoveTileFromOutsideToSlot>();
@@ -22,14 +22,24 @@ public class BoardAnimationManager : MonoBehaviour
     public void AddSwipeAnim(SwipeTileAnimation anim)
     {
         anim.isActive = true;
-        swipeAnimations.Add(anim);
+        swipeAnimationList.Add(anim);
+    }
+
+    public void AddAnimsMoveTilesWithinBoard(List<MoveTileWithinBoard> anims)
+    {
+        moveTileWithinBoardList.AddRange(anims);
+    }
+
+    public void AddAnimMoveTilesFromOutsideBoard(List<MoveTileFromOutsideToSlot> anims)
+    {
+        moveTilesFromOutsideBoard.AddRange(anims);
     }
     // Update is called once per frame
     void Update()
     {
-        if (!firedEventOnMoveTilesWithinBoardCompleted && moveTileWithinBoard.Count > 0)
+        if (!firedEventOnMoveTilesWithinBoardCompleted && moveTileWithinBoardList.Count > 0)
         {
-            foreach (var anim in moveTileWithinBoard)
+            foreach (var anim in moveTileWithinBoardList)
             {
                 if (!anim.isActive)
                 {
@@ -39,9 +49,9 @@ public class BoardAnimationManager : MonoBehaviour
             }
             foreach (var item in completedAnimsMovingTilesWithinBoard)
             {
-                if (moveTileWithinBoard.Contains(item))
+                if (moveTileWithinBoardList.Contains(item))
                 {
-                    moveTileWithinBoard.Remove(item);
+                    moveTileWithinBoardList.Remove(item);
                 }
             }
         }
@@ -50,10 +60,10 @@ public class BoardAnimationManager : MonoBehaviour
             firedEventOnMoveTilesWithinBoardCompleted = true;
             OnMoveTilesWithinBoardCompleted.Invoke(completedAnimsMovingTilesWithinBoard);
         }
-        if (swipeAnimations.Count > 0)
+        if (swipeAnimationList.Count > 0)
         {
             List<SwipeTileAnimation> animsToRemove = new List<SwipeTileAnimation>();
-            foreach (var anim in swipeAnimations)
+            foreach (var anim in swipeAnimationList)
             {
                 if (!anim.isActive)
                 {
@@ -64,7 +74,7 @@ public class BoardAnimationManager : MonoBehaviour
             }
             foreach (var item in animsToRemove)
             {
-                swipeAnimations.Remove(item);
+                swipeAnimationList.Remove(item);
             }
 
         }

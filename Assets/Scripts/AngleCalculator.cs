@@ -23,7 +23,7 @@ public class AngleCalculator
         {
             for (int j = 0; j < boardHeight; j++)
             {
-                if (tiles[i, j].x == targetIndexX && tiles[i, j].y == targetIndexY)
+                if (tiles[i, j].x == targetIndexX && tiles[i, j].y == targetIndexY && tiles[i,j].tileRef)
                 {
                     Debug.Log($"found target tile with x:{targetIndexX} and y:{targetIndexY} at index: {i},{j}, {tiles[i, j].tileRef.Props} ");
                     return tiles[i, j].tileRef;

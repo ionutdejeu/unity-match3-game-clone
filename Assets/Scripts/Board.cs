@@ -102,26 +102,31 @@ public class Board : MonoBehaviour
         {
             for (int j = 0; j < height; j++)
             {
-                boardSlots[i, j].tileRef.setIsMatched(false);
+                if (boardSlots[i, j].tileRef)
+                {
+                    boardSlots[i, j].tileRef.setIsMatched(false);
+                }
             }
 
         }
-        List<List<TileManager>> matchingTiles = BoardHelper.FindMatchingTiles2(boardSlots, width, height);
+        List<List<BoardPlaceholderProperties>> matchingTiles = BoardHelper.FindMatchingPlaceholders(boardSlots, width, height);
 
-        foreach (List<TileManager> matches in matchingTiles)
+        foreach (List<BoardPlaceholderProperties> matches in matchingTiles)
         {
-            foreach (TileManager t in matches)
+            foreach (BoardPlaceholderProperties t in matches)
             {
-                if (t != null)
-                    t.setIsMatched(true);
+                if (t.tileRef != null)
+                    t.tileRef.setIsMatched(true);
             }
         }
-        foreach (List<TileManager> matches in matchingTiles)
+        foreach (List<BoardPlaceholderProperties> matches in matchingTiles)
         {
            
-            //BoardHelper.DestroyMatchedTiles(matches);
+            BoardHelper.DestroyMatchedTiles(matches);
 
         }
+        // move the specified tiles down
+
 
     }
 
