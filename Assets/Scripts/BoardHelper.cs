@@ -93,9 +93,9 @@ public class BoardHelper
         int boardHeight,
         GameObject boardTilePrefab,
         GameObject parent,
-        UnityAction<TileSwipeEventArgs> onTileDraggedHandler,
-        UnityAction<TileManager> onSwipeAnimationCompletedHandler,
-        UnityAction<TileSwapEventArgs> onTileSwapCompletedEventHandler)
+        UnityAction<TileSwipeEventArgs> onTileDraggedHandler
+        //UnityAction<TileManager> onSwipeAnimationCompletedHandler
+        )
     {
         bool boardGenerationCompleted = false;
         while (!boardGenerationCompleted)
@@ -115,15 +115,11 @@ public class BoardHelper
                     tileProps.y = boardPlaceholders[i, j].y;
                     tileProps.worldPos = boardPlaceholders[i, j].worldPos;
                     boardPlaceholders[i, j].tileRef = tm;
-                    int findRandomMatchRetries = 0;
                     tileProps.type = boardTypes[i, j];
                     tm.setTileContentProperties(tileProps);
-
-                
-
                     tm.OnTileDragged.AddListener(onTileDraggedHandler);
-                    tm.OnTileSwipeAnimationCompled.AddListener(onSwipeAnimationCompletedHandler);
-                    tm.OnTileSwapCompleted.AddListener(onTileSwapCompletedEventHandler);
+                    //tm.OnTileSwipeAnimationCompled.AddListener(onSwipeAnimationCompletedHandler);
+                    //tm.OnTileSwapCompleted.AddListener(onTileSwapCompletedEventHandler);
 
                 }
             }
@@ -390,7 +386,7 @@ public class BoardHelper
         //look downwards for the specified tile
         for (int i = y - 1; i >= 0; i--)
         {
-            if (board[x, i].tileRef == null && board[x, i].tileRef.isActiveAndEnabled)
+            if (board[x, i].tileRef != null && board[x, i].tileRef.isActiveAndEnabled)
             {
                 return board[x, i];
             }

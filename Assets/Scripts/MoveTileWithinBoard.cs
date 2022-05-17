@@ -23,9 +23,9 @@ public class MoveTileWithinBoard
     {
 
     }
-    void tryUpdateTile()
+    void tryUpdateTile(float deltaTime)
     {
-        Vector3 newAPos = AngleCalculator.GetAnimatedPositionBetweenTilePosition(tileToMove.transform.position, targetSlot.worldPos, 0.1f);
+        Vector3 newAPos = AngleCalculator.GetAnimatedPositionBetweenTilePosition(tileToMove.transform.position, targetSlot.worldPos, 0.1f* deltaTime);
         tileToMove.transform.position = newAPos;
         if (Vector3.Magnitude(targetSlot.worldPos - tileToMove.transform.position) < 0.05f)
         {
@@ -40,7 +40,7 @@ public class MoveTileWithinBoard
     public void Update(float deltaTime)
     {
         if (!animationComplete)
-            tryUpdateTile();
+            tryUpdateTile(deltaTime);
         
     }
 }

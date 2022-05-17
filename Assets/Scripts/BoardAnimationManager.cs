@@ -37,6 +37,7 @@ public class BoardAnimationManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        float delta = Time.deltaTime;
         if (!firedEventOnMoveTilesWithinBoardCompleted && moveTileWithinBoardList.Count > 0)
         {
             foreach (var anim in moveTileWithinBoardList)
@@ -45,7 +46,7 @@ public class BoardAnimationManager : MonoBehaviour
                 {
                     completedAnimsMovingTilesWithinBoard.Add(anim);
                 }
-                anim.Update(1f);
+                anim.Update(delta);
             }
             foreach (var item in completedAnimsMovingTilesWithinBoard)
             {
@@ -70,7 +71,7 @@ public class BoardAnimationManager : MonoBehaviour
                     OnSwapAnimationCompleted.Invoke(anim);
                     animsToRemove.Add(anim);
                 }
-                anim.Update();
+                anim.Update(delta);
             }
             foreach (var item in animsToRemove)
             {
@@ -86,7 +87,7 @@ public class BoardAnimationManager : MonoBehaviour
                 {
                     completedAnimsMoveTilesFromOutsideBoard.Add(anim);
                 }
-                anim.Update(1f);
+                anim.Update(delta);
             }
             foreach (var item in completedAnimsMoveTilesFromOutsideBoard)
             {

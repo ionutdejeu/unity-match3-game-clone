@@ -94,7 +94,7 @@ public class Board : MonoBehaviour
         UpdateMatchedTiles();
 
     }
-    
+
     void UpdateMatchedTiles()
     {
         // recompute the tiles based on index;
@@ -119,14 +119,41 @@ public class Board : MonoBehaviour
                     t.tileRef.setIsMatched(true);
             }
         }
+
         foreach (List<BoardPlaceholderProperties> matches in matchingTiles)
         {
-           
+
             BoardHelper.DestroyMatchedTiles(matches);
 
         }
         // move the specified tiles down
-
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                if (boardSlots[i, j].tileRef)
+                {
+                    BoardPlaceholderProperties targetSlot = BoardHelper.FindTargetToMoveTheTileAfterDestroy(
+                        boardSlots,
+                        width,
+                        height,
+                        boardSlots[i, j].x,
+                        boardSlots[i, j].y);
+                    if (targetSlot!=null)
+                    {
+                        Debug.Log("found target "+ targetSlot.x + ":" + targetSlot.y+ " for source" + boardSlots[i,j].x +":"+ boardSlots[i, j].x);
+                    }
+                }
+            }
+        }
+        //foreach (List<BoardPlaceholderProperties> matches in matchingTiles)
+        //{
+        //    foreach (BoardPlaceholderProperties m in matches)
+        //    {
+        //        BoardPlaceholderProperties targetSlot = BoardHelper.FindTargetToMoveTheTileAfterDestroy(boardSlots, width, height, m.x, m.y);
+        //        Debug.Log(targetSlot.x + ":" + targetSlot.y);
+        //    }
+        //}
 
     }
 
@@ -148,8 +175,8 @@ public class Board : MonoBehaviour
             height,
             tilePrefab,
             this.gameObject,
-            this.OnTileDraggHandler,
-            this.OnSwipeAnimationCompleted,
-            this.OnTileSwapCompleted);
+            this.OnTileDraggHandler
+            //this.OnSwipeAnimationCompleted
+            );
     }
 }
